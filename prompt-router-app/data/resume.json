@@ -1,0 +1,14 @@
+{
+  "category": "resume",
+  "category_label": "Resume / CV",
+  "tools": ["ChatGPT", "Claude", "Gemini", "Microsoft Copilot"],
+  "framework": "Lead with a 2-line professional summary, quantify achievements with numbers wherever possible, use strong action verbs, keep bullet points to one line each, and flag any weak or vague lines that need the user to supply real numbers.",
+  "question_pool": [
+    { "id": "role", "question": "What role are you targeting?", "options": ["Same field", "Career switch", "First job", "Freelance/gig"] },
+    { "id": "experience", "question": "Experience level?", "options": ["Fresher", "1-3 years", "4-8 years", "8+ years"] },
+    { "id": "format", "question": "Format preference?", "options": ["ATS-friendly plain", "Modern/visual", "Academic/CV style", "Not sure"] },
+    { "id": "industry", "question": "Which industry?", "options": ["Tech", "Finance", "Creative/design", "Other/general"] },
+    { "id": "gap", "question": "Any employment gaps to address?", "options": ["Yes, need to explain", "No gaps", "Prefer not to mention"] },
+    { "id": "length", "question": "Target length?", "options": ["1 page", "2 pages", "Not sure"] }
+  ]
+}

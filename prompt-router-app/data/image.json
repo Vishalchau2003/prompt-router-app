@@ -1,0 +1,14 @@
+{
+  "category": "image",
+  "category_label": "Image generation",
+  "tools": ["Midjourney", "DALL-E", "Ideogram", "Adobe Firefly"],
+  "framework": "Specify camera/lens or rendering details appropriate to the style, composition (rule of thirds / centered / close-up), color palette, and aspect ratio suited to the use case (e.g. 1:1 for social, 4:5 for posts, 16:9 for banners).",
+  "question_pool": [
+    { "id": "style", "question": "What visual style?", "options": ["Photorealistic", "Illustration", "3D render", "Minimal/flat"] },
+    { "id": "use", "question": "What's it for?", "options": ["Social media post", "Product shot", "Poster/ad", "Personal art"] },
+    { "id": "mood", "question": "Mood/lighting?", "options": ["Bright & warm", "Moody/dramatic", "Clean/studio", "Festive"] },
+    { "id": "occasion", "question": "Tied to an occasion?", "options": ["Festival (Diwali/Eid etc)", "Sale/promo", "Everyday brand post", "None"] },
+    { "id": "aspect", "question": "Where will it be posted?", "options": ["Instagram post (square)", "Instagram story (vertical)", "Website banner (wide)", "Not sure"] },
+    { "id": "text_overlay", "question": "Any text/logo on the image?", "options": ["Yes, add text", "Yes, add logo", "No, image only"] }
+  ]
+}

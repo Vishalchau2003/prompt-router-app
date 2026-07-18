@@ -1,0 +1,12 @@
+{
+  "category": "general",
+  "category_label": "General / other",
+  "tools": ["ChatGPT", "Claude", "Gemini"],
+  "framework": "Produce one clear, well-structured prompt that states the task, the intended audience or use, the desired tone, and the expected output format. Keep it specific enough that the target AI needs no further clarification.",
+  "question_pool": [
+    { "id": "goal", "question": "What's the end goal?", "options": ["Get something written", "Get something planned", "Get something explained", "Get something decided"] },
+    { "id": "audience", "question": "Who is it for?", "options": ["Just me", "A client/customer", "My team", "The public"] },
+    { "id": "tone", "question": "What tone?", "options": ["Formal", "Casual", "Persuasive", "Neutral/factual"] },
+    { "id": "length", "question": "Roughly how long?", "options": ["Short", "Medium", "Long/detailed", "Not sure"] }
+  ]
+}

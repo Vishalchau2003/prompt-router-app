@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Route — idea to optimized prompt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  :root{
+    --bg:#12131a; --card:#1f2230; --card-hi:#262a3a;
+    --border:rgba(255,255,255,0.09); --border-hi:rgba(255,255,255,0.2);
+    --text:#edeef3; --text-muted:#9497ac; --text-faint:#63667a;
+    --accent:#e8a33d; --accent-soft:rgba(232,163,61,0.14);
+    --accent-2:#4fd1c5;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'IBM Plex Sans',sans-serif;
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(232,163,61,0.09), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 10%, rgba(79,209,197,0.07), transparent 55%),
+      var(--bg);
+  }
+  #root{ max-width:720px; margin:0 auto; padding:44px 20px 80px; }
+  h1{ font-family:'Space Grotesk',sans-serif; font-size:clamp(26px,5vw,36px); line-height:1.2; margin:0 0 10px; }
+  h1 em{ font-style:normal; color:var(--accent); }
+  p.sub{ color:var(--text-muted); font-size:15px; line-height:1.6; max-width:52ch; margin:0 0 32px; }
+  .cat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:28px; }
+  .cat-card{
+    background:var(--card); border:1.5px solid var(--border); border-radius:14px;
+    padding:18px; cursor:pointer; transition:all .15s;
+  }
+  .cat-card:hover{ border-color:var(--border-hi); }
+  .cat-card.selected{ border-color:var(--accent); background:var(--accent-soft); }
+  .cat-card .emoji{ font-size:22px; margin-bottom:8px; display:block; }
+  .cat-card .label{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; }
+  textarea{
+    width:100%; background:var(--card); border:1px solid var(--border); border-radius:14px;
+    color:var(--text); font-family:inherit; font-size:16px; padding:16px; min-height:100px; resize:vertical;
+  }
+  textarea:focus{ outline:none; border-color:var(--border-hi); }
+  button.primary{
+    background:var(--accent); color:#1a1305; border:none; font-family:'Space Grotesk',sans-serif;
+    font-weight:600; font-size:15px; padding:13px 24px; border-radius:10px; cursor:pointer; margin-top:14px;
+  }
+  button.primary:disabled{ opacity:0.5; cursor:not-allowed; }
+  button.ghost{
+    background:transparent; border:1px solid var(--border); color:var(--text-muted);
+    font-size:14px; padding:10px 18px; border-radius:10px; cursor:pointer; margin-left:10px;
+  }
+  .question-block{ margin:22px 0; }
+  .question-label{ font-family:'Space Grotesk',sans-serif; font-weight:600; margin-bottom:10px; }
+  .option-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  .option{
+    background:var(--card); border:1.5px solid var(--border); color:var(--text);
+    padding:9px 16px; border-radius:10px; cursor:pointer; font-size:14px; transition:all .15s;
+  }
+  .option.selected{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent); font-weight:600; }
+  .result-card{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; margin-top:24px; white-space:pre-wrap; line-height:1.6; }
+  .tool-grid{ display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
+  .tool-btn{ background:var(--card); border:1px solid var(--border); color:var(--text); padding:9px 15px; border-radius:9px; font-size:13px; }
+  .error{ background:rgba(232,105,93,0.1); border:1px solid rgba(232,105,93,0.35); color:#f0a89f; padding:12px 14px; border-radius:10px; margin-top:14px; font-size:14px; }
+  .badge{ display:inline-block; font-size:12px; color:var(--accent-2); background:rgba(79,209,197,0.12); padding:5px 12px; border-radius:999px; margin-bottom:16px; }
+  .spinner-text{ color:var(--text-faint); font-size:13px; margin-top:12px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const EMOJI = { presentation:'📊', resume:'📄', image:'🖼️', video:'🎬' };
+
+function App(){
+  const [categories, setCategories] = useState([]);
+  const [category, setCategory] = useState(null);
+  const [idea, setIdea] = useState('');
+  const [stage, setStage] = useState('pick'); // pick -> questions -> result
+  const [questions, setQuestions] = useState([]);
+  const [tools, setTools] = useState([]);
+  const [categoryLabel, setCategoryLabel] = useState('');
+  const [answers, setAnswers] = useState({});
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/categories').then(r => r.json()).then(setCategories).catch(() => {});
+  }, []);
+
+  async function fetchQuestions(){
+    if(!idea.trim()){ setError('Type your idea first.'); return; }
+    setLoading(true); setError(null);
+    try{
+      const res = await fetch('/api/questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, idea })
+      });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error);
+      setQuestions(data.questions);
+      setTools(data.tools);
+      setCategoryLabel(data.category_label);
+      setAnswers({});
+      setStage('questions');
+    }catch(err){ setError(err.message); }
+    finally{ setLoading(false); }
+  }
+
+  async function generate(){
+    setLoading(true); setError(null);
+    try{
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, idea, answers, selectedQuestions: questions })
+      });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error);
+      setResult(data);
+      setStage('result');
+    }catch(err){ setError(err.message); }
+    finally{ setLoading(false); }
+  }
+
+  function reset(){
+    setCategory(null); setIdea(''); setStage('pick'); setQuestions([]);
+    setAnswers({}); setResult(null); setError(null);
+  }
+
+  if(stage === 'result' && result){
+    return (
+      <div>
+        <h1>Your <em>optimized prompt</em></h1>
+        <div className="badge">{result.category_label}</div>
+        <div className="result-card">{result.finalPrompt}</div>
+        <div className="tool-grid">
+          {result.tools.map(t => <div key={t} className="tool-btn">{t}</div>)}
+        </div>
+        <button className="ghost" onClick={reset} style={{marginTop:'20px', marginLeft:0}}>← Try another idea</button>
+      </div>
+    );
+  }
+
+  if(stage === 'questions'){
+    return (
+      <div>
+        <h1>A couple of <em>quick questions</em></h1>
+        <div className="badge">{categoryLabel} — picked for your specific idea</div>
+        {questions.map(q => (
+          <div className="question-block" key={q.id}>
+            <div className="question-label">{q.question}</div>
+            <div className="option-row">
+              {q.options.map(opt => (
+                <div
+                  key={opt}
+                  className={"option" + (answers[q.id]===opt ? " selected" : "")}
+                  onClick={() => setAnswers({...answers, [q.id]: opt})}
+                >{opt}</div>
+              ))}
+            </div>
+          </div>
+        ))}
+        <div>
+          <button className="primary" onClick={generate} disabled={loading}>
+            {loading ? 'Optimizing…' : 'Generate my prompt →'}
+          </button>
+          <button className="ghost" onClick={reset}>Start over</button>
+        </div>
+        {error && <div className="error">{error}</div>}
+      </div>
+    );
+  }
+
+  // stage === 'pick'
+  return (
+    <div>
+      <h1>Say what you want.<br/><em>Get the exact prompt.</em></h1>
+      <p className="sub">Pick a category, describe your idea — Route asks Gemini to pick the questions that actually matter for THIS idea, not a fixed generic set.</p>
+
+      <div className="cat-grid">
+        {categories.map(c => (
+          <div key={c.id} className={"cat-card" + (category===c.id ? " selected" : "")} onClick={() => setCategory(c.id)}>
+            <span className="emoji">{EMOJI[c.id] || '✨'}</span>
+            <span className="label">{c.label}</span>
+          </div>
+        ))}
+        <div className={"cat-card" + (category==='general' ? " selected" : "")} onClick={() => setCategory('general')}>
+          <span className="emoji">✨</span>
+          <span className="label">Something else</span>
+        </div>
+      </div>
+
+      {category && (
+        <div>
+          <textarea placeholder="Describe your idea…" value={idea} onChange={e => setIdea(e.target.value)} />
+          <div>
+            <button className="primary" onClick={fetchQuestions} disabled={loading}>
+              {loading ? 'Thinking…' : 'Continue →'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {error && <div className="error">{error}</div>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

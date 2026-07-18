@@ -1,0 +1,15 @@
+{
+  "category": "presentation",
+  "category_label": "Presentation / PPT",
+  "tools": ["Gamma", "Canva", "Microsoft Copilot", "Tome"],
+  "framework": "Structure with a clear title slide, an agenda, one idea per slide, a data/proof section if relevant, and a strong closing/CTA slide. Specify slide titles and 2-4 bullet points per slide, and suggest one visual per slide. Match depth and formality to the stated audience.",
+  "question_pool": [
+    { "id": "audience", "question": "Who is this for?", "options": ["Investors", "Clients", "Students", "Internal team"] },
+    { "id": "length", "question": "How many slides?", "options": ["5-7", "8-12", "13-20", "Not sure"] },
+    { "id": "tone", "question": "What tone?", "options": ["Formal", "Persuasive", "Simple/educational", "Bold/creative"] },
+    { "id": "goal", "question": "What's the main goal?", "options": ["Get funding", "Close a sale", "Teach a concept", "Report progress"] },
+    { "id": "data", "question": "Include data/numbers?", "options": ["Yes, heavy on data", "A little", "No, mostly narrative"] },
+    { "id": "branding", "question": "Follow a brand style?", "options": ["Yes, specific colors/logo", "Loosely on-brand", "No preference"] },
+    { "id": "delivery", "question": "Will you present it live or send it?", "options": ["Present live", "Send to read alone", "Both"] }
+  ]
+}

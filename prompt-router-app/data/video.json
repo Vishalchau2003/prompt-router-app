@@ -1,0 +1,16 @@
+{
+  "category": "video",
+  "category_label": "Video generation",
+  "tools": ["Sora", "Runway", "Pika", "Luma Dream Machine"],
+  "framework": "Break the concept into a shot-by-shot list: for each shot specify the subject and action, camera angle/movement, lighting, and pacing. Match the tone and structure to the specific occasion (ad, personal reel, event, wedding, product demo, etc). End with a strong closing shot, on-screen text, or call-to-action frame where relevant.",
+  "question_pool": [
+    { "id": "platform", "question": "Where will this be posted?", "options": ["Instagram Reel", "YouTube Shorts", "Full ad", "Personal/other"] },
+    { "id": "duration", "question": "How long?", "options": ["5-10 sec", "15-30 sec", "30-60 sec", "1 min+"] },
+    { "id": "style", "question": "Visual style?", "options": ["Cinematic realistic", "Bright/energetic", "Calm/aesthetic", "Animated"] },
+    { "id": "occasion", "question": "What's the occasion?", "options": ["Wedding/event", "Product launch", "Festival/sale", "Everyday moment"] },
+    { "id": "names_or_brand", "question": "Names / brand to feature?", "options": ["Couple's names", "Brand/product name", "Person's name", "None"] },
+    { "id": "cta", "question": "Should it end with a call-to-action?", "options": ["Yes, drive sales", "Yes, drive follows", "No, just showcase"] },
+    { "id": "voiceover", "question": "Voiceover or text-only?", "options": ["Voiceover narration", "On-screen text only", "Background music only"] },
+    { "id": "location", "question": "Setting?", "options": ["Indoor/studio", "Outdoor/nature", "Urban/street", "Doesn't matter"] }
+  ]
+}
