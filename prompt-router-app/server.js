@@ -10,7 +10,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 // Check https://ai.google.dev/gemini-api/docs/models for the current
 // recommended model name — Google updates these regularly.
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
 
 const VALID_CATEGORIES = ['presentation', 'resume', 'image', 'video', 'general'];
 
