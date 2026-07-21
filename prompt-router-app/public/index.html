@@ -11,62 +11,151 @@
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
   :root{
-    --bg:#12131a; --card:#1f2230; --card-hi:#262a3a;
-    --border:rgba(255,255,255,0.09); --border-hi:rgba(255,255,255,0.2);
-    --text:#edeef3; --text-muted:#9497ac; --text-faint:#63667a;
-    --accent:#e8a33d; --accent-soft:rgba(232,163,61,0.14);
-    --accent-2:#4fd1c5;
+    --bg:#0e0f16; --card:#181a27; --card-hi:#1e2135;
+    --border:rgba(255,255,255,0.08); --border-hi:rgba(255,255,255,0.18);
+    --text:#edeef3; --text-muted:#9497ac; --text-faint:#50536a;
+    --accent:#e8a33d; --accent-soft:rgba(232,163,61,0.12); --accent-glow:rgba(232,163,61,0.25);
+    --accent-2:#4fd1c5; --accent-2-soft:rgba(79,209,197,0.1);
+    --danger:rgba(232,105,93,0.1); --danger-border:rgba(232,105,93,0.3); --danger-text:#f0a89f;
+    --radius:14px; --radius-sm:10px;
   }
-  *{box-sizing:border-box;}
+  *{box-sizing:border-box; margin:0; padding:0;}
   body{
-    margin:0; background:var(--bg); color:var(--text);
+    background:var(--bg); color:var(--text);
     font-family:'IBM Plex Sans',sans-serif;
     background:
-      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(232,163,61,0.09), transparent 60%),
-      radial-gradient(ellipse 700px 500px at 100% 10%, rgba(79,209,197,0.07), transparent 55%),
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(232,163,61,0.07), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 10%, rgba(79,209,197,0.05), transparent 55%),
       var(--bg);
+    min-height:100vh;
   }
-  #root{ max-width:720px; margin:0 auto; padding:44px 20px 80px; }
-  h1{ font-family:'Space Grotesk',sans-serif; font-size:clamp(26px,5vw,36px); line-height:1.2; margin:0 0 10px; }
+
+  /* ── Layout ── */
+  #root{ max-width:700px; margin:0 auto; padding:52px 20px 100px; }
+
+  /* ── Stepper ── */
+  .stepper{ display:flex; align-items:center; gap:0; margin-bottom:44px; }
+  .step{ display:flex; align-items:center; gap:8px; }
+  .step-dot{
+    width:28px; height:28px; border-radius:50%; border:2px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600;
+    color:var(--text-faint); transition:all .3s;
+  }
+  .step-dot.active{ border-color:var(--accent); color:var(--accent); background:var(--accent-soft); }
+  .step-dot.done{ border-color:var(--accent-2); background:var(--accent-2-soft); color:var(--accent-2); }
+  .step-label{ font-size:12px; font-weight:500; color:var(--text-faint); transition:color .3s; }
+  .step-label.active{ color:var(--text-muted); }
+  .step-line{ flex:1; height:1px; background:var(--border); margin:0 12px; }
+
+  /* ── Typography ── */
+  h1{ font-family:'Space Grotesk',sans-serif; font-size:clamp(24px,5vw,34px); line-height:1.2; margin-bottom:10px; }
   h1 em{ font-style:normal; color:var(--accent); }
-  p.sub{ color:var(--text-muted); font-size:15px; line-height:1.6; max-width:52ch; margin:0 0 32px; }
-  .cat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:28px; }
+  .sub{ color:var(--text-muted); font-size:14.5px; line-height:1.65; max-width:52ch; margin-bottom:32px; }
+
+  /* ── Category grid ── */
+  .cat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:24px; }
   .cat-card{
-    background:var(--card); border:1.5px solid var(--border); border-radius:14px;
-    padding:18px; cursor:pointer; transition:all .15s;
+    background:var(--card); border:1.5px solid var(--border); border-radius:var(--radius);
+    padding:18px 16px; cursor:pointer; transition:border-color .18s, background .18s, transform .15s;
+    display:flex; align-items:center; gap:12px;
   }
-  .cat-card:hover{ border-color:var(--border-hi); }
+  .cat-card:hover{ border-color:var(--border-hi); transform:translateY(-1px); }
   .cat-card.selected{ border-color:var(--accent); background:var(--accent-soft); }
-  .cat-card .emoji{ font-size:22px; margin-bottom:8px; display:block; }
-  .cat-card .label{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; }
+  .cat-card .emoji{ font-size:20px; flex-shrink:0; }
+  .cat-card .label{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14.5px; }
+
+  /* ── Idea input area ── */
+  .idea-wrap{ margin-bottom:4px; }
+  .idea-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .idea-label{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:var(--text-muted); }
+  .lang-toggle{ display:flex; gap:4px; }
+  .lang-btn{
+    background:transparent; border:1.5px solid var(--border); color:var(--text-faint);
+    font-size:12px; font-weight:600; padding:5px 11px; border-radius:8px; cursor:pointer;
+    transition:all .15s;
+  }
+  .lang-btn.active{ border-color:var(--accent); color:var(--accent); background:var(--accent-soft); }
+  .translate-hint{ font-size:12px; color:var(--accent-2); margin-top:6px; display:flex; align-items:center; gap:5px; }
+
   textarea{
-    width:100%; background:var(--card); border:1px solid var(--border); border-radius:14px;
-    color:var(--text); font-family:inherit; font-size:16px; padding:16px; min-height:100px; resize:vertical;
+    width:100%; background:var(--card); border:1.5px solid var(--border); border-radius:var(--radius);
+    color:var(--text); font-family:inherit; font-size:15px; padding:14px 16px;
+    min-height:110px; resize:vertical; transition:border-color .18s;
+    line-height:1.6;
   }
   textarea:focus{ outline:none; border-color:var(--border-hi); }
+  textarea::placeholder{ color:var(--text-faint); }
+
+  /* ── Buttons ── */
+  .btn-row{ display:flex; align-items:center; gap:10px; margin-top:14px; flex-wrap:wrap; }
   button.primary{
-    background:var(--accent); color:#1a1305; border:none; font-family:'Space Grotesk',sans-serif;
-    font-weight:600; font-size:15px; padding:13px 24px; border-radius:10px; cursor:pointer; margin-top:14px;
+    background:var(--accent); color:#1a1305; border:none;
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14.5px;
+    padding:12px 22px; border-radius:var(--radius-sm); cursor:pointer;
+    transition:opacity .15s, transform .12s, box-shadow .15s;
+    box-shadow:0 0 0 0 var(--accent-glow);
   }
-  button.primary:disabled{ opacity:0.5; cursor:not-allowed; }
+  button.primary:hover:not(:disabled){ transform:translateY(-1px); box-shadow:0 4px 20px var(--accent-glow); }
+  button.primary:disabled{ opacity:0.45; cursor:not-allowed; transform:none; }
   button.ghost{
-    background:transparent; border:1px solid var(--border); color:var(--text-muted);
-    font-size:14px; padding:10px 18px; border-radius:10px; cursor:pointer; margin-left:10px;
+    background:transparent; border:1.5px solid var(--border); color:var(--text-muted);
+    font-family:'IBM Plex Sans',sans-serif; font-size:13.5px;
+    padding:10px 16px; border-radius:var(--radius-sm); cursor:pointer;
+    transition:border-color .15s, color .15s;
   }
-  .question-block{ margin:22px 0; }
-  .question-label{ font-family:'Space Grotesk',sans-serif; font-weight:600; margin-bottom:10px; }
-  .option-row{ display:flex; flex-wrap:wrap; gap:8px; }
+  button.ghost:hover{ border-color:var(--border-hi); color:var(--text); }
+  button.icon-btn{
+    background:var(--card); border:1.5px solid var(--border); color:var(--text-muted);
+    font-size:13px; padding:8px 14px; border-radius:8px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px;
+    transition:border-color .15s, color .15s, background .15s;
+  }
+  button.icon-btn:hover{ border-color:var(--border-hi); color:var(--text); background:var(--card-hi); }
+  button.icon-btn.copied{ border-color:var(--accent-2); color:var(--accent-2); background:var(--accent-2-soft); }
+
+  /* ── Questions ── */
+  .question-block{ margin:20px 0; }
+  .question-label{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14.5px; margin-bottom:10px; line-height:1.4; }
+  .option-row{ display:flex; flex-wrap:wrap; gap:7px; }
   .option{
-    background:var(--card); border:1.5px solid var(--border); color:var(--text);
-    padding:9px 16px; border-radius:10px; cursor:pointer; font-size:14px; transition:all .15s;
+    background:var(--card); border:1.5px solid var(--border); color:var(--text-muted);
+    padding:8px 15px; border-radius:var(--radius-sm); cursor:pointer; font-size:13.5px;
+    transition:all .15s;
   }
+  .option:hover{ border-color:var(--border-hi); color:var(--text); }
   .option.selected{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent); font-weight:600; }
-  .result-card{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; margin-top:24px; white-space:pre-wrap; line-height:1.6; }
-  .tool-grid{ display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
-  .tool-btn{ background:var(--card); border:1px solid var(--border); color:var(--text); padding:9px 15px; border-radius:9px; font-size:13px; }
-  .error{ background:rgba(232,105,93,0.1); border:1px solid rgba(232,105,93,0.35); color:#f0a89f; padding:12px 14px; border-radius:10px; margin-top:14px; font-size:14px; }
-  .badge{ display:inline-block; font-size:12px; color:var(--accent-2); background:rgba(79,209,197,0.12); padding:5px 12px; border-radius:999px; margin-bottom:16px; }
-  .spinner-text{ color:var(--text-faint); font-size:13px; margin-top:12px; }
+
+  /* ── Result card ── */
+  .result-card{
+    background:var(--card); border:1.5px solid var(--border); border-radius:var(--radius);
+    padding:22px; margin-top:20px; white-space:pre-wrap; line-height:1.7;
+    font-size:14.5px; color:var(--text);
+  }
+  .result-actions{ display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+
+  /* ── Tool grid ── */
+  .tools-section{ margin-top:28px; }
+  .tools-title{ font-family:'Space Grotesk',sans-serif; font-size:12px; font-weight:600;
+    color:var(--text-faint); text-transform:uppercase; letter-spacing:.08em; margin-bottom:10px; }
+  .tool-grid{ display:flex; flex-wrap:wrap; gap:8px; }
+  .tool-btn{
+    display:inline-flex; align-items:center; gap:7px;
+    background:var(--card); border:1.5px solid var(--border); color:var(--text-muted);
+    padding:9px 14px; border-radius:var(--radius-sm); font-size:13px;
+    text-decoration:none; transition:all .15s;
+  }
+  .tool-btn:hover{ border-color:var(--accent); color:var(--accent); background:var(--accent-soft); }
+  .tool-btn .arrow{ font-size:11px; opacity:0.6; }
+
+  /* ── Misc ── */
+  .error{ background:var(--danger); border:1px solid var(--danger-border); color:var(--danger-text); padding:11px 14px; border-radius:var(--radius-sm); margin-top:14px; font-size:13.5px; }
+  .badge{ display:inline-block; font-size:12px; color:var(--accent-2); background:var(--accent-2-soft); padding:5px 12px; border-radius:999px; margin-bottom:16px; font-weight:500; }
+  .spinner-text{ color:var(--text-faint); font-size:13px; margin-top:10px; display:flex; align-items:center; gap:7px; }
+  .dot-pulse::after{ content:'...'; animation:dots 1.2s steps(3,end) infinite; }
+  @keyframes dots{ 0%{content:''} 33%{content:'.'} 66%{content:'..'} 100%{content:'...'} }
+
+  .divider{ height:1px; background:var(--border); margin:28px 0; }
 </style>
 </head>
 <body>
@@ -75,85 +164,185 @@
 <script type="text/babel">
 const { useState, useEffect } = React;
 
-const EMOJI = { presentation:'📊', resume:'📄', image:'🖼️', video:'🎬' };
+const EMOJI = { presentation:'📊', resume:'📄', image:'🖼️', video:'🎬', general:'✨' };
 
-function App(){
-  const [categories, setCategories] = useState([]);
-  const [category, setCategory] = useState(null);
-  const [idea, setIdea] = useState('');
-  const [stage, setStage] = useState('pick'); // pick -> questions -> result
-  const [questions, setQuestions] = useState([]);
-  const [tools, setTools] = useState([]);
+const TOOL_URLS = {
+  'Gamma':                 'https://gamma.app',
+  'Canva':                 'https://canva.com',
+  'Microsoft Copilot':     'https://copilot.microsoft.com',
+  'Tome':                  'https://tome.app',
+  'ChatGPT':               'https://chat.openai.com',
+  'Claude':                'https://claude.ai',
+  'Gemini':                'https://gemini.google.com',
+  'Midjourney':            'https://midjourney.com',
+  'DALL-E':                'https://labs.openai.com',
+  'Ideogram':              'https://ideogram.ai',
+  'Adobe Firefly':         'https://firefly.adobe.com',
+  'Sora':                  'https://sora.openai.com',
+  'Runway':                'https://runwayml.com',
+  'Pika':                  'https://pika.art',
+  'Luma Dream Machine':    'https://lumalabs.ai/dream-machine',
+};
+
+function Stepper({ stage }) {
+  const steps = [
+    { id: 'pick',      label: 'Category & Idea' },
+    { id: 'questions', label: 'Quick Questions' },
+    { id: 'result',    label: 'Your Prompt' },
+  ];
+  const idx = { pick: 0, questions: 1, result: 2 };
+  const current = idx[stage] ?? 0;
+  return (
+    <div className="stepper">
+      {steps.map((s, i) => (
+        <React.Fragment key={s.id}>
+          <div className="step">
+            <div className={'step-dot' + (i < current ? ' done' : i === current ? ' active' : '')}>
+              {i < current ? '✓' : i + 1}
+            </div>
+            <span className={'step-label' + (i === current ? ' active' : '')}>{s.label}</span>
+          </div>
+          {i < steps.length - 1 && <div className="step-line" />}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
+function CopyButton({ text }) {
+  const [copied, setCopied] = useState(false);
+  function copy() {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+  return (
+    <button className={'icon-btn' + (copied ? ' copied' : '')} onClick={copy}>
+      {copied ? '✓ Copied' : '⎘ Copy prompt'}
+    </button>
+  );
+}
+
+function App() {
+  const [categories, setCategories]       = useState([]);
+  const [category, setCategory]           = useState(null);
+  const [idea, setIdea]                   = useState('');
+  const [lang, setLang]                   = useState('en');   // 'en' | 'hi'
+  const [translating, setTranslating]     = useState(false);
+  const [stage, setStage]                 = useState('pick');
+  const [questions, setQuestions]         = useState([]);
+  const [tools, setTools]                 = useState([]);
   const [categoryLabel, setCategoryLabel] = useState('');
-  const [answers, setAnswers] = useState({});
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [answers, setAnswers]             = useState({});
+  const [result, setResult]               = useState(null);
+  const [loading, setLoading]             = useState(false);
+  const [error, setError]                 = useState(null);
 
   useEffect(() => {
     fetch('/api/categories').then(r => r.json()).then(setCategories).catch(() => {});
   }, []);
 
-  async function fetchQuestions(){
-    if(!idea.trim()){ setError('Type your idea first.'); return; }
+  async function translateIfNeeded(text) {
+    if (lang !== 'hi') return text;
+    setTranslating(true);
+    try {
+      const res = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      return data.translated;
+    } finally {
+      setTranslating(false);
+    }
+  }
+
+  async function fetchQuestions() {
+    if (!idea.trim()) { setError('अपना विचार लिखें / Type your idea first.'); return; }
     setLoading(true); setError(null);
-    try{
+    try {
+      const englishIdea = await translateIfNeeded(idea);
       const res = await fetch('/api/questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category, idea })
+        body: JSON.stringify({ category, idea: englishIdea })
       });
       const data = await res.json();
-      if(!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error);
       setQuestions(data.questions);
       setTools(data.tools);
       setCategoryLabel(data.category_label);
       setAnswers({});
       setStage('questions');
-    }catch(err){ setError(err.message); }
-    finally{ setLoading(false); }
+    } catch(err) { setError(err.message); }
+    finally { setLoading(false); }
   }
 
-  async function generate(){
+  async function generate() {
     setLoading(true); setError(null);
-    try{
+    try {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ category, idea, answers, selectedQuestions: questions })
       });
       const data = await res.json();
-      if(!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error);
       setResult(data);
       setStage('result');
-    }catch(err){ setError(err.message); }
-    finally{ setLoading(false); }
+    } catch(err) { setError(err.message); }
+    finally { setLoading(false); }
   }
 
-  function reset(){
+  function reset() {
     setCategory(null); setIdea(''); setStage('pick'); setQuestions([]);
-    setAnswers({}); setResult(null); setError(null);
+    setAnswers({}); setResult(null); setError(null); setLang('en');
   }
 
-  if(stage === 'result' && result){
+  /* ─── Result screen ─── */
+  if (stage === 'result' && result) {
     return (
       <div>
+        <Stepper stage="result" />
         <h1>Your <em>optimized prompt</em></h1>
         <div className="badge">{result.category_label}</div>
+
         <div className="result-card">{result.finalPrompt}</div>
-        <div className="tool-grid">
-          {result.tools.map(t => <div key={t} className="tool-btn">{t}</div>)}
+
+        <div className="result-actions">
+          <CopyButton text={result.finalPrompt} />
+          <button className="ghost" onClick={reset}>← Try another idea</button>
         </div>
-        <button className="ghost" onClick={reset} style={{marginTop:'20px', marginLeft:0}}>← Try another idea</button>
+
+        <div className="tools-section">
+          <div className="divider" />
+          <div className="tools-title">Paste this prompt into</div>
+          <div className="tool-grid">
+            {result.tools.map(t => {
+              const url = TOOL_URLS[t];
+              return url
+                ? <a key={t} href={url} target="_blank" rel="noopener noreferrer" className="tool-btn">
+                    {t} <span className="arrow">↗</span>
+                  </a>
+                : <span key={t} className="tool-btn">{t}</span>;
+            })}
+          </div>
+        </div>
       </div>
     );
   }
 
-  if(stage === 'questions'){
+  /* ─── Questions screen ─── */
+  if (stage === 'questions') {
     return (
       <div>
-        <h1>A couple of <em>quick questions</em></h1>
-        <div className="badge">{categoryLabel} — picked for your specific idea</div>
+        <Stepper stage="questions" />
+        <h1>A few <em>quick questions</em></h1>
+        <div className="badge">{categoryLabel} — tailored to your idea</div>
+
         {questions.map(q => (
           <div className="question-block" key={q.id}>
             <div className="question-label">{q.question}</div>
@@ -161,16 +350,17 @@ function App(){
               {q.options.map(opt => (
                 <div
                   key={opt}
-                  className={"option" + (answers[q.id]===opt ? " selected" : "")}
+                  className={'option' + (answers[q.id] === opt ? ' selected' : '')}
                   onClick={() => setAnswers({...answers, [q.id]: opt})}
                 >{opt}</div>
               ))}
             </div>
           </div>
         ))}
-        <div>
+
+        <div className="btn-row" style={{marginTop:'24px'}}>
           <button className="primary" onClick={generate} disabled={loading}>
-            {loading ? 'Optimizing…' : 'Generate my prompt →'}
+            {loading ? <span className="dot-pulse">Optimizing</span> : 'Generate my prompt →'}
           </button>
           <button className="ghost" onClick={reset}>Start over</button>
         </div>
@@ -179,31 +369,53 @@ function App(){
     );
   }
 
-  // stage === 'pick'
+  /* ─── Pick screen ─── */
   return (
     <div>
+      <Stepper stage="pick" />
       <h1>Say what you want.<br/><em>Get the exact prompt.</em></h1>
-      <p className="sub">Pick a category, describe your idea — Route asks Gemini to pick the questions that actually matter for THIS idea, not a fixed generic set.</p>
+      <p className="sub">Pick a category, describe your idea — Route uses Gemini to pick the questions that matter for <em style={{fontStyle:'normal',color:'var(--text)'}}>your</em> idea, not a fixed generic set.</p>
 
       <div className="cat-grid">
         {categories.map(c => (
-          <div key={c.id} className={"cat-card" + (category===c.id ? " selected" : "")} onClick={() => setCategory(c.id)}>
+          <div key={c.id} className={'cat-card' + (category === c.id ? ' selected' : '')} onClick={() => setCategory(c.id)}>
             <span className="emoji">{EMOJI[c.id] || '✨'}</span>
             <span className="label">{c.label}</span>
           </div>
         ))}
-        <div className={"cat-card" + (category==='general' ? " selected" : "")} onClick={() => setCategory('general')}>
+        <div className={'cat-card' + (category === 'general' ? ' selected' : '')} onClick={() => setCategory('general')}>
           <span className="emoji">✨</span>
           <span className="label">Something else</span>
         </div>
       </div>
 
       {category && (
-        <div>
-          <textarea placeholder="Describe your idea…" value={idea} onChange={e => setIdea(e.target.value)} />
-          <div>
-            <button className="primary" onClick={fetchQuestions} disabled={loading}>
-              {loading ? 'Thinking…' : 'Continue →'}
+        <div className="idea-wrap">
+          <div className="idea-header">
+            <span className="idea-label">Describe your idea</span>
+            <div className="lang-toggle">
+              <button className={'lang-btn' + (lang === 'en' ? ' active' : '')} onClick={() => setLang('en')}>EN</button>
+              <button className={'lang-btn' + (lang === 'hi' ? ' active' : '')} onClick={() => setLang('hi')}>हिं</button>
+            </div>
+          </div>
+
+          <textarea
+            placeholder={lang === 'hi' ? 'अपना विचार हिंदी में लिखें…' : 'Describe your idea…'}
+            value={idea}
+            onChange={e => setIdea(e.target.value)}
+          />
+
+          {lang === 'hi' && (
+            <div className="translate-hint">
+              ⟳ Your Hindi text will be auto-translated to English before generating the prompt.
+            </div>
+          )}
+
+          <div className="btn-row">
+            <button className="primary" onClick={fetchQuestions} disabled={loading || translating}>
+              {translating ? <span className="dot-pulse">Translating</span>
+               : loading    ? <span className="dot-pulse">Thinking</span>
+               : 'Continue →'}
             </button>
           </div>
         </div>

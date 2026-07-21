@@ -41,6 +41,21 @@ function stripFences(text) {
   return text.replace(/```json/g, '').replace(/```/g, '').trim();
 }
 
+// ---- POST /api/translate ----
+// Body: { text }  — translates Hindi (or any language) to English via Gemini.
+app.post('/api/translate', async (req, res) => {
+  const { text } = req.body;
+  if (!text || !text.trim()) return res.status(400).json({ error: 'text is required' });
+  try {
+    const translated = await callGemini(
+      `Translate the following text to English. Output ONLY the translated text, no explanation:\n\n${text}`
+    );
+    res.json({ translated });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ---- GET /api/categories ----
 // Lightweight list for the frontend's category picker.
 app.get('/api/categories', (req, res) => {
