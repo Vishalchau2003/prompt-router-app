@@ -69,13 +69,16 @@
   .idea-wrap{ margin-bottom:4px; }
   .idea-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
   .idea-label{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; color:var(--text-muted); }
-  .lang-toggle{ display:flex; gap:4px; }
-  .lang-btn{
-    background:transparent; border:1.5px solid var(--border); color:var(--text-faint);
-    font-size:12px; font-weight:600; padding:5px 11px; border-radius:8px; cursor:pointer;
-    transition:all .15s;
+  .lang-select{
+    background:var(--card); border:1.5px solid var(--border); color:var(--text-muted);
+    font-family:'IBM Plex Sans',sans-serif; font-size:13px; padding:5px 10px;
+    border-radius:8px; cursor:pointer; outline:none; transition:border-color .15s;
+    appearance:none; -webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239497ac'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 8px center; padding-right:24px;
   }
-  .lang-btn.active{ border-color:var(--accent); color:var(--accent); background:var(--accent-soft); }
+  .lang-select:focus{ border-color:var(--accent); color:var(--text); }
+  .lang-select.active{ border-color:var(--accent); color:var(--accent); background-color:var(--accent-soft); }
   .translate-hint{ font-size:12px; color:var(--accent-2); margin-top:6px; display:flex; align-items:center; gap:5px; }
 
   textarea{
@@ -187,6 +190,20 @@ const { useState, useEffect } = React;
 
 const EMOJI = { presentation:'📊', resume:'📄', image:'🖼️', video:'🎬', general:'✨' };
 
+const LANGUAGES = [
+  { code:'en',    micCode:'en-US', label:'English' },
+  { code:'hi',    micCode:'hi-IN', label:'हिंदी — Hindi' },
+  { code:'bn',    micCode:'bn-IN', label:'বাংলা — Bengali' },
+  { code:'ta',    micCode:'ta-IN', label:'தமிழ் — Tamil' },
+  { code:'te',    micCode:'te-IN', label:'తెలుగు — Telugu' },
+  { code:'mr',    micCode:'mr-IN', label:'मराठी — Marathi' },
+  { code:'gu',    micCode:'gu-IN', label:'ગુજરાતી — Gujarati' },
+  { code:'kn',    micCode:'kn-IN', label:'ಕನ್ನಡ — Kannada' },
+  { code:'ml',    micCode:'ml-IN', label:'മലയാളം — Malayalam' },
+  { code:'pa',    micCode:'pa-IN', label:'ਪੰਜਾਬੀ — Punjabi' },
+  { code:'ur',    micCode:'ur-IN', label:'اردو — Urdu' },
+];
+
 const TOOL_URLS = {
   'Gamma':                 'https://gamma.app',
   'Canva':                 'https://canva.com',
@@ -230,7 +247,7 @@ function Stepper({ stage }) {
   );
 }
 
-function MicButton({ onResult, onLangSwitch }) {
+function MicButton({ micCode, onResult }) {
   const [listening, setListening] = useState(false);
   const recogRef = React.useRef(null);
 
@@ -244,7 +261,7 @@ function MicButton({ onResult, onLangSwitch }) {
     }
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     const r = new SR();
-    r.lang = 'hi-IN';
+    r.lang = micCode;
     r.interimResults = false;
     r.maxAlternatives = 1;
     recogRef.current = r;
@@ -252,9 +269,7 @@ function MicButton({ onResult, onLangSwitch }) {
     r.onend    = () => setListening(false);
     r.onerror  = () => setListening(false);
     r.onresult = (e) => {
-      const transcript = e.results[0][0].transcript;
-      onResult(transcript);
-      onLangSwitch('hi');
+      onResult(e.results[0][0].transcript);
     };
     r.start();
   }
@@ -264,7 +279,7 @@ function MicButton({ onResult, onLangSwitch }) {
       <button
         className={'mic-btn' + (listening ? ' listening' : '') + (!supported ? ' unsupported' : '')}
         onClick={toggle}
-        title={!supported ? 'Speech recognition not supported in this browser (use Chrome/Edge)' : listening ? 'Stop listening' : 'Speak in Hindi'}
+        title={!supported ? 'Speech recognition needs Chrome or Edge' : listening ? 'Stop listening' : 'Speak now'}
       >
         {listening ? '⏹' : '🎤'}
       </button>
@@ -292,7 +307,7 @@ function App() {
   const [categories, setCategories]       = useState([]);
   const [category, setCategory]           = useState(null);
   const [idea, setIdea]                   = useState('');
-  const [lang, setLang]                   = useState('en');   // 'en' | 'hi'
+  const [lang, setLang]                   = useState('en');   // language code from LANGUAGES
   const [translating, setTranslating]     = useState(false);
   const [stage, setStage]                 = useState('pick');
   const [questions, setQuestions]         = useState([]);
@@ -308,7 +323,7 @@ function App() {
   }, []);
 
   async function translateIfNeeded(text) {
-    if (lang !== 'hi') return text;
+    if (lang === 'en') return text;
     setTranslating(true);
     try {
       const res = await fetch('/api/translate', {
@@ -325,7 +340,7 @@ function App() {
   }
 
   async function fetchQuestions() {
-    if (!idea.trim()) { setError('अपना विचार लिखें / Type your idea first.'); return; }
+    if (!idea.trim()) { setError('Please type or speak your idea first.'); return; }
     setLoading(true); setError(null);
     try {
       const englishIdea = await translateIfNeeded(idea);
@@ -457,28 +472,41 @@ function App() {
         <div className="idea-wrap">
           <div className="idea-header">
             <span className="idea-label">Describe your idea</span>
-            <div className="lang-toggle">
-              <button className={'lang-btn' + (lang === 'en' ? ' active' : '')} onClick={() => setLang('en')}>EN</button>
-              <button className={'lang-btn' + (lang === 'hi' ? ' active' : '')} onClick={() => setLang('hi')}>हिं</button>
-            </div>
+            <select
+              className={'lang-select' + (lang !== 'en' ? ' active' : '')}
+              value={lang}
+              onChange={e => { setLang(e.target.value); setIdea(''); }}
+            >
+              {LANGUAGES.map(l => (
+                <option key={l.code} value={l.code}>{l.label}</option>
+              ))}
+            </select>
           </div>
 
-          <div className="textarea-wrap">
-            <textarea
-              placeholder={lang === 'hi' ? 'अपना विचार हिंदी में लिखें… या 🎤 बोलें' : 'Describe your idea… or tap 🎤 to speak in Hindi'}
-              value={idea}
-              onChange={e => setIdea(e.target.value)}
-              style={{paddingBottom:'52px'}}
-            />
-            <MicButton
-              onResult={transcript => setIdea(transcript)}
-              onLangSwitch={setLang}
-            />
-          </div>
+          {(() => {
+            const activeLang = LANGUAGES.find(l => l.code === lang) || LANGUAGES[0];
+            const placeholder = lang === 'en'
+              ? 'Describe your idea… or tap 🎤 to speak'
+              : `${activeLang.label.split('—')[0].trim()} में लिखें… या 🎤 बोलें`;
+            return (
+              <div className="textarea-wrap">
+                <textarea
+                  placeholder={placeholder}
+                  value={idea}
+                  onChange={e => setIdea(e.target.value)}
+                  style={{paddingBottom:'52px'}}
+                />
+                <MicButton
+                  micCode={activeLang.micCode}
+                  onResult={transcript => setIdea(transcript)}
+                />
+              </div>
+            );
+          })()}
 
-          {lang === 'hi' && (
+          {lang !== 'en' && (
             <div className="translate-hint">
-              ⟳ Your Hindi text will be auto-translated to English before generating the prompt.
+              ⟳ Will be auto-translated to English before generating your prompt.
             </div>
           )}
 
